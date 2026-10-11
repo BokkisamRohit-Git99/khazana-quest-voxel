@@ -1,6 +1,8 @@
 class ThreeStage {
     constructor() {
         this.container = document.getElementById('game-container');
+
+        // Default initial values
         this.coins = GAME_CONFIG.initialCoins;
         this.researchPoints = GAME_CONFIG.initialShards;
         this.multiplier = 1;
@@ -10,7 +12,6 @@ class ThreeStage {
         this.currentBlockHP = 40;
         this.blockLevel = 1;
 
-        // 5 Panchabhuta Elements (Earth, Water, Fire, Air, Ether)
         this.blockTypes = [
             { name: "Pathala Sandstone", element: "Prithvi (Earth)", color: 0xD2B48C, metal: 0.1, rough: 0.8, transmission: 0.0, hp: 40, reward: 35 },
             { name: "Suryakanta Gem Deposit", element: "Jala (Water)", color: 0x33A1FD, metal: 0.2, rough: 0.1, transmission: 0.9, hp: 120, reward: 110 },
@@ -23,7 +24,51 @@ class ThreeStage {
         this.setupLights();
         this.createHyperRealisticBlock();
         this.setupRaycasting();
-        this.animate();
+
+        // Load saved game progress asynchronously on boot
+        this.loadGameProgress().then(() => {
+            this.animate();
+        });
+    }
+
+    async loadGameProgress() {
+        const saveData = await cgManager.loadData(GAME_CONFIG.storageKey);
+        if (saveData) {
+            this.coins = saveData.coins || this.coins;
+            this.researchPoints = saveData.researchPoints || this.researchPoints;
+            this.multiplier = saveData.multiplier || this.multiplier;
+            this.clickPower = saveData.clickPower || this.clickPower;
+            this.blockLevel = saveData.blockLevel || this.blockLevel;
+            this.currentBlockHP = saveData.currentBlockHP || this.currentBlockHP;
+
+            // Apply loaded block tier properties
+            const activeBlock = this.blockTypes[(this.blockLevel - 1) % this.blockTypes.length];
+            this.maxBlockHP = activeBlock.hp;
+            if (this.currentBlockHP > this.maxBlockHP) this.currentBlockHP = this.maxBlockHP;
+
+            this.material.color.setHex(activeBlock.color);
+            this.material.metalness = activeBlock.metal;
+            this.material.roughness = activeBlock.rough;
+            this.material.transmission = activeBlock.transmission;
+
+            document.getElementById('element-badge').innerText = `${activeBlock.element} Element`;
+            document.getElementById('block-title').innerText = `${activeBlock.name} (Lv. ${this.blockLevel})`;
+
+            this.updateHUD();
+            console.log("Game progress successfully loaded!");
+        }
+    }
+
+    saveGameProgress() {
+        const saveData = {
+            coins: this.coins,
+            researchPoints: this.researchPoints,
+            multiplier: this.multiplier,
+            clickPower: this.clickPower,
+            blockLevel: this.blockLevel,
+            currentBlockHP: this.currentBlockHP
+        };
+        cgManager.saveData(GAME_CONFIG.storageKey, saveData);
     }
 
     initThree() {
@@ -42,8 +87,6 @@ class ThreeStage {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.container.appendChild(this.renderer.domElement);
-
-        window.addEventListener('resize', () => this.onResize());
     }
 
     setupLights() {
@@ -79,7 +122,6 @@ class ThreeStage {
         this.coreMesh = new THREE.Mesh(coreGeo, this.material);
         this.blockGroup.add(this.coreMesh);
 
-        // Floating Crystal Geometry Surrounding Core
         const crystalGeo = new THREE.ConeGeometry(0.3, 1.2, 4);
         for (let i = 0; i < 6; i++) {
             const crystal = new THREE.Mesh(crystalGeo, this.material);
@@ -120,31 +162,10 @@ class ThreeStage {
 
         if (this.currentBlockHP <= 0) {
             this.nextBlock();
+        } else {
+            // Save periodically on hits
+            this.saveGameProgress();
         }
-    }
-
-    triggerVajraBolt() {
-        const damage = 300 * this.multiplier;
-        this.currentBlockHP -= damage;
-        if (this.currentBlockHP < 0) this.currentBlockHP = 0;
-        this.updateHPUI();
-        if (this.currentBlockHP <= 0) this.nextBlock();
-    }
-
-    triggerAgniMelting() {
-        const damage = 600 * this.multiplier;
-        this.currentBlockHP -= damage;
-        if (this.currentBlockHP < 0) this.currentBlockHP = 0;
-        this.updateHPUI();
-        if (this.currentBlockHP <= 0) this.nextBlock();
-    }
-
-    triggerTrishulaCombo() {
-        const damage = 1200 * this.multiplier;
-        this.currentBlockHP -= damage;
-        if (this.currentBlockHP < 0) this.currentBlockHP = 0;
-        this.updateHPUI();
-        if (this.currentBlockHP <= 0) this.nextBlock();
     }
 
     updateHPUI() {
@@ -153,12 +174,17 @@ class ThreeStage {
         document.getElementById('hp-text').innerText = `${Math.ceil(this.currentBlockHP)}/${this.maxBlockHP}`;
     }
 
+    updateHUD() {
+        document.getElementById('gold-val').innerText = this.coins;
+        document.getElementById('research-val').innerText = this.researchPoints;
+        this.updateHPUI();
+    }
+
     nextBlock() {
         const b = this.blockTypes[(this.blockLevel - 1) % this.blockTypes.length];
         this.coins += b.reward;
         this.researchPoints += 8;
-        document.getElementById('gold-val').innerText = this.coins;
-        document.getElementById('research-val').innerText = this.researchPoints;
+        this.updateHUD();
 
         this.blockLevel++;
         const next = this.blockTypes[(this.blockLevel - 1) % this.blockTypes.length];
@@ -174,19 +200,43 @@ class ThreeStage {
         document.getElementById('block-title').innerText = `${next.name} (Lv. ${this.blockLevel})`;
         this.updateHPUI();
 
-        // Trigger Midgame Interstitial Ad every 10 Block Clears
+        // Trigger Cloud Save on block clearance
+        this.saveGameProgress();
+
         if (this.blockLevel % 10 === 0) {
             cgManager.showMidgameAd(() => { });
         }
     }
 
-    pauseAudio() {
-        // Sound pause logic placeholder
+    triggerVajraBolt() {
+        const damage = 300 * this.multiplier;
+        this.currentBlockHP -= damage;
+        if (this.currentBlockHP < 0) this.currentBlockHP = 0;
+        this.updateHPUI();
+        this.saveGameProgress();
+        if (this.currentBlockHP <= 0) this.nextBlock();
     }
 
-    resumeAudio() {
-        // Sound resume logic placeholder
+    triggerAgniMelting() {
+        const damage = 600 * this.multiplier;
+        this.currentBlockHP -= damage;
+        if (this.currentBlockHP < 0) this.currentBlockHP = 0;
+        this.updateHPUI();
+        this.saveGameProgress();
+        if (this.currentBlockHP <= 0) this.nextBlock();
     }
+
+    triggerTrishulaCombo() {
+        const damage = 1200 * this.multiplier;
+        this.currentBlockHP -= damage;
+        if (this.currentBlockHP < 0) this.currentBlockHP = 0;
+        this.updateHPUI();
+        this.saveGameProgress();
+        if (this.currentBlockHP <= 0) this.nextBlock();
+    }
+
+    pauseAudio() { }
+    resumeAudio() { }
 
     animate() {
         requestAnimationFrame(() => this.animate());
@@ -201,13 +251,5 @@ class ThreeStage {
         }
 
         this.renderer.render(this.scene, this.camera);
-    }
-
-    onResize() {
-        const width = this.container.clientWidth;
-        const height = this.container.clientHeight;
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
     }
 }
