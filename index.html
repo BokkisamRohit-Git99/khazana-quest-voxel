@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Khazana Quest: Panchabhuta 3D RNG</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Rajdhani:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Vendor CDN Libraries -->
+    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div id="app-layout">
+        <!-- Left WebGL 3D Canvas Viewport -->
+        <div id="game-container">
+            <div id="hud-overlay">
+                <div id="element-badge">🌍 Prithvi Element (Earth)</div>
+                <div id="block-title">Pathala Sandstone (Lv. 1)</div>
+                <div id="stats-counter">🪙 <span id="gold-val">250</span> Gold &nbsp;•&nbsp; 🔬 <span
+                        id="research-val">0</span> Shards</div>
+                <div class="hp-bar-container">
+                    <div id="hp-bar-fill"></div>
+                    <span id="hp-text">40/40</span>
+                </div>
+            </div>
+
+            <!-- Quick Action Active Astras Bar -->
+            <div id="astras-hud">
+                <button class="astra-btn" onclick="threeStage.triggerVajraBolt()">⚡ Vajra Bolt</button>
+                <button class="astra-btn" onclick="threeStage.triggerAgniMelting()">🔥 Agni Flame</button>
+                <button class="astra-btn" onclick="threeStage.triggerTrishulaCombo()">🔱 Trishula Fury</button>
+            </div>
+        </div>
+
+        <!-- Right Sidebar Progression Hub -->
+        <div id="sidebar-container">
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-tab="upgrades"><span>⬆️</span><span>Upgrades</span></button>
+                <button class="tab-btn" data-tab="tools"><span>⛏️</span><span>Tools Set</span></button>
+                <button class="tab-btn" data-tab="research"><span>🔬</span><span>Research</span></button>
+                <button class="tab-btn" data-tab="shastra"><span>📜</span><span>Shastras</span></button>
+            </div>
+            <div id="sidebar-content-area" class="sidebar-content"></div>
+        </div>
+    </div>
+
+    <!-- Bottom CrazyGames Banner Ad Container -->
+    <div id="banner-ad-bottom" class="banner-container"></div>
+
+    <!-- Application Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/CrazyGamesManager.js"></script>
+    <script src="js/ThreeStage.js"></script>
+    <script src="js/UIOverlay.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
