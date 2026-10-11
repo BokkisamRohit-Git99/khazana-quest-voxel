@@ -1,26 +1,25 @@
 class UIOverlay {
-    constructor() {
-        this.bindTabEvents();
-    }
+  constructor() {
+    this.bindTabEvents();
+  }
 
-    bindTabEvents() {
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.tab-btn');
-            if (btn) {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.render(btn.getAttribute('data-tab'));
-            }
-        });
-    }
+  bindTabEvents() {
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab-btn');
+      if (btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.render(btn.getAttribute('data-tab'));
+      }
+    });
+  }
 
-    render(tab = 'upgrades') {
-        const container = document.getElementById('sidebar-content-area');
-        if (!container) return;
+  render(tab = 'upgrades') {
+    const container = document.getElementById('sidebar-content-area');
+    if (!container) return;
 
-        // TAB 1: UPGRADES
-        if (tab === 'upgrades') {
-            container.innerHTML = `
+    if (tab === 'upgrades') {
+      container.innerHTML = `
         <div id="ad-gold-boost" class="upgrade-card" style="background: linear-gradient(135deg, #FF9F43 0%, #FF671F 100%); color:#12100E; cursor:pointer;">
           <div>
             <div style="font-weight:bold; font-size:13px;">📺 Watch Ad: x2 Gold for 5 Mins</div>
@@ -46,24 +45,22 @@ class UIOverlay {
         </div>
       `;
 
-            document.getElementById('ad-gold-boost').onclick = () => {
-                cgManager.showRewardedAd(() => {
-                    window.threeStage.multiplier = 2;
-                    alert("x2 Gold Multiplier Active!");
-                });
-            };
-            document.getElementById('buy-swing').onclick = () => {
-                if (window.threeStage.coins >= 75) {
-                    window.threeStage.coins -= 75;
-                    window.threeStage.clickPower += 20;
-                    document.getElementById('gold-val').innerText = window.threeStage.coins;
-                }
-            };
+      document.getElementById('ad-gold-boost').onclick = () => {
+        cgManager.showRewardedAd(() => {
+          window.threeStage.multiplier = 2;
+          alert("x2 Gold Multiplier Active!");
+        });
+      };
+      document.getElementById('buy-swing').onclick = () => {
+        if (window.threeStage.coins >= 75) {
+          window.threeStage.coins -= 75;
+          window.threeStage.clickPower += 20;
+          document.getElementById('gold-val').innerText = window.threeStage.coins;
+          window.threeStage.saveGameProgress();
         }
-
-        // TAB 2: EXTENSIVE TOOLS SET
-        else if (tab === 'tools') {
-            container.innerHTML = `
+      };
+    } else if (tab === 'tools') {
+      container.innerHTML = `
         <div style="font-size:11px; color:#A0A5C0; margin-bottom:8px;">
           Equipped Vedic Tool Set. Forge duplicates to ascend tool star levels.
         </div>
@@ -104,20 +101,18 @@ class UIOverlay {
         </div>
       `;
 
-            document.getElementById('ad-tool-crate').onclick = () => {
-                cgManager.showRewardedAd(() => alert("Obtained Mythic Agni Astra Tool!"));
-            };
-            document.getElementById('ad-tool-forge').onclick = () => {
-                cgManager.showRewardedAd(() => {
-                    window.threeStage.clickPower *= 2;
-                    alert("All Tools Ascended: +100% Strike Power!");
-                });
-            };
-        }
-
-        // TAB 3: EXTENSIVE RESEARCH ALCHEMY
-        else if (tab === 'research') {
-            container.innerHTML = `
+      document.getElementById('ad-tool-crate').onclick = () => {
+        cgManager.showRewardedAd(() => alert("Obtained Mythic Agni Astra Tool!"));
+      };
+      document.getElementById('ad-tool-forge').onclick = () => {
+        cgManager.showRewardedAd(() => {
+          window.threeStage.clickPower *= 2;
+          window.threeStage.saveGameProgress();
+          alert("All Tools Ascended: +100% Strike Power!");
+        });
+      };
+    } else if (tab === 'research') {
+      container.innerHTML = `
         <div style="font-size:11px; color:#A0A5C0; margin-bottom:8px;">
           Unlock ancient Vedic alchemy combinations & elemental catalysts.
         </div>
@@ -159,17 +154,14 @@ class UIOverlay {
         </div>
       `;
 
-            document.getElementById('ad-research-1').onclick = () => {
-                cgManager.showRewardedAd(() => alert("Agni Plasma Resonance Research Instantly Unlocked!"));
-            };
-            document.getElementById('ad-research-2').onclick = () => {
-                cgManager.showRewardedAd(() => alert("Akasha Cosmic Void Extraction Instantly Unlocked!"));
-            };
-        }
-
-        // TAB 4: EXTENSIVE VEDIC SHASTRAS
-        else if (tab === 'shastra') {
-            container.innerHTML = `
+      document.getElementById('ad-research-1').onclick = () => {
+        cgManager.showRewardedAd(() => alert("Agni Plasma Resonance Research Instantly Unlocked!"));
+      };
+      document.getElementById('ad-research-2').onclick = () => {
+        cgManager.showRewardedAd(() => alert("Akasha Cosmic Void Extraction Instantly Unlocked!"));
+      };
+    } else if (tab === 'shastra') {
+      container.innerHTML = `
         <div style="font-size:11px; color:#A0A5C0; margin-bottom:8px;">
           Sacred scriptures granting divine passive blessings & daily video rewards.
         </div>
@@ -193,21 +185,21 @@ class UIOverlay {
         </div>
       `;
 
-            document.getElementById('ad-shastra-1').onclick = () => {
-                cgManager.showRewardedAd(() => {
-                    window.threeStage.multiplier = 2.5;
-                    alert("Dhatu Divine Blessing Activated (+150% Gold)!");
-                });
-            };
-            document.getElementById('ad-shastra-2').onclick = () => {
-                cgManager.showRewardedAd(() => {
-                    window.threeStage.nextBlock();
-                    alert("Rasa Transmutation Instantly Spawned Rare Element Block!");
-                });
-            };
-            document.getElementById('ad-shastra-3').onclick = () => {
-                cgManager.showRewardedAd(() => alert("Astra Overcharge Activated: Infinite Astra Strikes!"));
-            };
-        }
+      document.getElementById('ad-shastra-1').onclick = () => {
+        cgManager.showRewardedAd(() => {
+          window.threeStage.multiplier = 2.5;
+          alert("Dhatu Divine Blessing Activated (+150% Gold)!");
+        });
+      };
+      document.getElementById('ad-shastra-2').onclick = () => {
+        cgManager.showRewardedAd(() => {
+          window.threeStage.nextBlock();
+          alert("Rasa Transmutation Instantly Spawned Rare Element Block!");
+        });
+      };
+      document.getElementById('ad-shastra-3').onclick = () => {
+        cgManager.showRewardedAd(() => alert("Astra Overcharge Activated: Infinite Astra Strikes!"));
+      };
     }
+  }
 }

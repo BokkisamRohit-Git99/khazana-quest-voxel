@@ -1,14 +1,17 @@
 window.onload = async () => {
-    // Initialize CrazyGames SDK v3
+    // 1. Initialize CrazyGames SDK v3
     await cgManager.initSDK();
 
-    // Instantiating 3D Engine & UI Overlay Modules
+    // 2. Instantiate Three.js Engine & UI Modules
     window.threeStage = new ThreeStage();
     window.uiOverlay = new UIOverlay();
 
-    // Initial Sidebar Rendering
+    // 3. Render Initial Sidebar Tab
     window.uiOverlay.render('upgrades');
 
-    // Request Responsive Banner Ad in safe zone
+    // 4. Fire Gameplay Start Event (Fixes CrazyGames Audit Warning)
+    cgManager.notifyGameplayStart();
+
+    // 5. Request Responsive Banner Placement
     cgManager.requestBanner('banner-ad-bottom');
 };

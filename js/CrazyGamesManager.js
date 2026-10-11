@@ -24,12 +24,35 @@ class CrazyGamesManager {
         console.log(`Network connection: ${status ? 'Online' : 'Offline'}`);
     }
 
-    // --- CrazyGames Cloud Save & Local Fallback Methods ---
+    // --- CrazyGames Gameplay Lifecycle Events ---
+
+    notifyGameplayStart() {
+        if (this.sdk && this.sdk.game) {
+            try {
+                this.sdk.game.gameplayStart();
+                console.log("CrazyGames SDK: gameplayStart() fired successfully.");
+            } catch (e) {
+                console.warn("gameplayStart error:", e);
+            }
+        }
+    }
+
+    notifyGameplayStop() {
+        if (this.sdk && this.sdk.game) {
+            try {
+                this.sdk.game.gameplayStop();
+                console.log("CrazyGames SDK: gameplayStop() fired successfully.");
+            } catch (e) {
+                console.warn("gameplayStop error:", e);
+            }
+        }
+    }
+
+    // --- CrazyGames Cloud Save Data Module ---
 
     async saveData(key, dataObject) {
         const jsonString = JSON.stringify(dataObject);
 
-        // 1. Try CrazyGames Cloud Data SDK if available (syncs across devices)
         if (this.sdk && this.sdk.data) {
             try {
                 await this.sdk.data.setItem(key, jsonString);
@@ -40,7 +63,6 @@ class CrazyGamesManager {
             }
         }
 
-        // 2. Local fallback for development / offline mode
         try {
             localStorage.setItem(key, jsonString);
         } catch (e) {
@@ -51,7 +73,6 @@ class CrazyGamesManager {
     async loadData(key) {
         let rawData = null;
 
-        // 1. Try CrazyGames Cloud Data SDK first
         if (this.sdk && this.sdk.data) {
             try {
                 rawData = await this.sdk.data.getItem(key);
@@ -60,7 +81,6 @@ class CrazyGamesManager {
             }
         }
 
-        // 2. Fallback to localStorage if cloud returns nothing
         if (!rawData) {
             rawData = localStorage.getItem(key);
         }
@@ -73,10 +93,10 @@ class CrazyGamesManager {
             }
         }
 
-        return null; // Return null if no save exists yet
+        return null;
     }
 
-    // --- Ad & Banner Methods ---
+    // --- Ad & Audio Management ---
 
     showRewardedAd(onSuccess, onFailure) {
         if (!this.isOnline) {
@@ -86,18 +106,21 @@ class CrazyGamesManager {
         }
 
         if (!this.sdk) {
-            onSuccess(); // Local fallback for development testing
+            onSuccess(); // Mock fallback for local dev
             return;
         }
 
         this.sdk.ad.requestAd('rewarded', {
-            adStarted: () => { if (window.threeStage) window.threeStage.pauseAudio(); },
+            adStarted: () => {
+                if (window.threeStage) window.threeStage.pauseAudio();
+            },
             adFinished: () => {
                 if (window.threeStage) window.threeStage.resumeAudio();
                 onSuccess();
             },
             adError: (error) => {
                 if (window.threeStage) window.threeStage.resumeAudio();
+                console.warn("Rewarded ad failed or was dismissed:", error);
                 if (onFailure) onFailure(error);
             }
         });
@@ -110,7 +133,9 @@ class CrazyGamesManager {
         }
 
         this.sdk.ad.requestAd('midgame', {
-            adStarted: () => { if (window.threeStage) window.threeStage.pauseAudio(); },
+            adStarted: () => {
+                if (window.threeStage) window.threeStage.pauseAudio();
+            },
             adFinished: () => {
                 if (window.threeStage) window.threeStage.resumeAudio();
                 if (onComplete) onComplete();
@@ -124,7 +149,11 @@ class CrazyGamesManager {
 
     requestBanner(containerId) {
         if (this.sdk && this.isOnline) {
-            try { this.sdk.banner.requestResponsiveBanner([containerId]); } catch (e) { }
+            try {
+                this.sdk.banner.requestResponsiveBanner([containerId]);
+            } catch (e) {
+                console.warn("Banner Request Error:", e);
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ class ThreeStage {
     constructor() {
         this.container = document.getElementById('game-container');
 
-        // Default initial values
         this.coins = GAME_CONFIG.initialCoins;
         this.researchPoints = GAME_CONFIG.initialShards;
         this.multiplier = 1;
@@ -25,7 +24,6 @@ class ThreeStage {
         this.createHyperRealisticBlock();
         this.setupRaycasting();
 
-        // Load saved game progress asynchronously on boot
         this.loadGameProgress().then(() => {
             this.animate();
         });
@@ -41,7 +39,6 @@ class ThreeStage {
             this.blockLevel = saveData.blockLevel || this.blockLevel;
             this.currentBlockHP = saveData.currentBlockHP || this.currentBlockHP;
 
-            // Apply loaded block tier properties
             const activeBlock = this.blockTypes[(this.blockLevel - 1) % this.blockTypes.length];
             this.maxBlockHP = activeBlock.hp;
             if (this.currentBlockHP > this.maxBlockHP) this.currentBlockHP = this.maxBlockHP;
@@ -55,7 +52,7 @@ class ThreeStage {
             document.getElementById('block-title').innerText = `${activeBlock.name} (Lv. ${this.blockLevel})`;
 
             this.updateHUD();
-            console.log("Game progress successfully loaded!");
+            console.log("Game progress loaded successfully.");
         }
     }
 
@@ -87,6 +84,8 @@ class ThreeStage {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.container.appendChild(this.renderer.domElement);
+
+        window.addEventListener('resize', () => this.onResize());
     }
 
     setupLights() {
@@ -163,7 +162,6 @@ class ThreeStage {
         if (this.currentBlockHP <= 0) {
             this.nextBlock();
         } else {
-            // Save periodically on hits
             this.saveGameProgress();
         }
     }
@@ -200,7 +198,6 @@ class ThreeStage {
         document.getElementById('block-title').innerText = `${next.name} (Lv. ${this.blockLevel})`;
         this.updateHPUI();
 
-        // Trigger Cloud Save on block clearance
         this.saveGameProgress();
 
         if (this.blockLevel % 10 === 0) {
@@ -251,5 +248,13 @@ class ThreeStage {
         }
 
         this.renderer.render(this.scene, this.camera);
+    }
+
+    onResize() {
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight;
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
     }
 }

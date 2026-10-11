@@ -135,7 +135,7 @@ html {
     transform: scale(1.05);
 }
 
-/* Sidebar & Navigation Tabs */
+/* Sidebar & Tabs */
 #sidebar-container {
     width: 35%;
     height: 100%;
@@ -178,6 +178,37 @@ html {
     flex: 1;
     padding: 12px;
     overflow-y: auto;
+}
+
+/* Legal Footer Notice for User Consent */
+.legal-footer {
+    padding: 8px;
+    background: #10121C;
+    border-top: 1px solid #222738;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    font-size: 9px;
+    z-index: 10;
+}
+
+.legal-footer a {
+    color: #6C7293;
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.legal-footer a:hover {
+    color: var(--accent-gold);
+    text-decoration: underline;
+}
+
+.legal-footer span {
+    color: #444B66;
+    font-size: 8px;
 }
 
 /* Item & Component Cards */
